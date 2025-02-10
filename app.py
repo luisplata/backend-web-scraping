@@ -3,6 +3,7 @@ import subprocess
 import requests
 import os
 import time
+import markdown
 
 app = Flask(__name__)
 
@@ -16,10 +17,17 @@ GITHUB_REPO = os.getenv("GITHUB_REPO")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
 @app.route('/')
-def ejecutar_ls():
+def mostrar_readme():
     try:
-        resultado = subprocess.run(['ls'], text=True, capture_output=True)
-        return f"<pre>{resultado.stdout}</pre>"
+        # Leer el contenido del archivo README.md
+        with open('README.md', 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Convertir el contenido de Markdown a HTML
+        html_content = markdown.markdown(content)
+        
+        # Retornar el contenido HTML
+        return f"<html><body>{html_content}</body></html>"
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -28,7 +36,7 @@ def request_anime():
     data = request.json
     user_uuid = data.get("uuid")
     anime_name = data.get("animeName")
-    discord_webhook = data.get("discordWebhook")
+    discord_webhook = data.get("discordWebhook", None)
     webhook = os.getenv("WEBHOOK")
     search_type = data.get("searchType", "AllCaps")
 
